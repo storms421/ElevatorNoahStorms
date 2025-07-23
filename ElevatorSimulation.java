@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 public class ElevatorSimulation {
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, InterruptedException {
 		
 		Scanner elevatorFile = new Scanner(new File("Elevator.txt"));
 		
@@ -73,6 +73,11 @@ public class ElevatorSimulation {
 		while(true) {
 			int current = elevator.getCurrentFloor();
 			Floor floor = floors[current - minFloor]; // Account for zero based indexing in array
+			
+			// Adding a timer to simulate time for doors open/close and moving to next floor
+			System.out.printf("Doors opening on floor %d...\n", current);
+			Thread.sleep(3000); // 3 seconds
+			
 			//First, unload passengers at the floor if any. This is how we make room for new passengers
 			ArrayList<Passenger> exiting = elevator.unloadPassenger();
 			for(Passenger passenger : exiting) {
@@ -99,6 +104,9 @@ public class ElevatorSimulation {
 				
 			}
 			
+			System.out.printf("Doors closing on floor %d...\n", current);
+			Thread.sleep(3000);
+			
 			// If elevator is empty and no passengers are waiting, end elevator travel
 			/* Side note: we would just let the elevator be idle until called upon again.
 			 * This elevator is currently moving based on information stored in a text
@@ -109,14 +117,9 @@ public class ElevatorSimulation {
 				break;
 			}
 			
-			// If the elevator has not reached the top, keep going
-			if(current < maxFloor) {
-				elevator.moveUp();
-			}
-			else {
-				System.out.println("Elevator has reached the top. Downward has not been implemented. End simulation.");
-				break;
-			}
+			// Takes care of whether the elevator moves up or down
+			elevator.move();
+			Thread.sleep(3000);
 			
 		} // end while
 		
