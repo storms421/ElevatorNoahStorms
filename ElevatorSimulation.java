@@ -1,9 +1,137 @@
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 public class ElevatorSimulation {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
+		
+		Scanner elevatorFile = new Scanner(new File("Elevator.txt"));
+		
+		System.out.println("Starting up system...\n");
+		
+		// Pull constants for elevator
+		int maxCapacity = elevatorFile.nextInt();
+		int minFloor = elevatorFile.nextInt();
+		int maxFloor = elevatorFile.nextInt();
+		
+		// Create Elevator object
+		Elevator elevator = new Elevator(maxCapacity, minFloor, maxFloor);
+		
+		// Establish floor levels
+		int totalFloors = (maxFloor - minFloor + 1);
+		Floor[] floors = new Floor[totalFloors];
+		for(int i = 0; i < totalFloors; i++) {
+			int floorNum = minFloor + i;
+			floors[i] = new Floor(floorNum);
+			System.out.printf("Floor %d has been established.\n", floorNum);
+		}
+		
+		System.out.printf("\nThis elevator has a max capacity of %d passengers.\n", maxCapacity);
+		
+		System.out.println("\nLoading information...");
+		
+		// While reading through the file, pull passenger information
+		while(elevatorFile.hasNextLine()) {
+			
+			// Checking to see if there is more info for passenger. Buggy without
+			if(!elevatorFile.hasNext()) {
+				break;
+			}
+			String name = elevatorFile.next();
+			
+			if(!elevatorFile.hasNextInt()) {
+				break;
+			}
+			int currentFloor = elevatorFile.nextInt();
+			
+			if(!elevatorFile.hasNextInt()) {
+				break;
+			}
+			int destinationFloor = elevatorFile.nextInt();
+			
+			Passenger passenger = new Passenger(currentFloor, destinationFloor, name); // Create Passenger objects
+			
+			// Adding passengers to their starting points in the building
+			int floorIndex = currentFloor - minFloor;
+			// If the passenger is on a legitimate floor, add them to that floor
+			if(floorIndex >= 0 && floorIndex < floors.length) {
+				floors[floorIndex].addPassenger(passenger);
+				System.out.printf("Passenger %s is waiting on floor %d to go to %d%n", passenger.getName(), passenger.getCurrentFloor(), passenger.getDestinationFloor());
+			}
+			else {
+				System.out.printf("Invalid starting floor %d for passenger %s\n", currentFloor, name);
+			}
+		}
+		
+		elevatorFile.close();
+		
+		System.out.println("\nStarting simulation...");
+		
+		// Loop simulation while there are passengers (currently will stop too if reaches the top)
+		while(true) {
+			int current = elevator.getCurrentFloor();
+			Floor floor = floors[current - minFloor]; // Account for zero based indexing in array
+			//First, unload passengers at the floor if any. This is how we make room for new passengers
+			ArrayList<Passenger> exiting = elevator.unloadPassenger();
+			for(Passenger passenger : exiting) {
+				System.out.printf("Passenger %s got off at floor %d\n", passenger.getName(), current);
+			}
+			
+			// Elevator checks to see if floor has passengers waiting to board
+			while(floor.hasWaitingPassengers()) {
+				
+				// Check to see the next passenger's information
+				Passenger passenger = floor.peekNextPassenger();
+				
+				
+				// If elevator is not full, let passengers on
+				if(!elevator.isElevatorFull()) {
+					floor.getNextPassenger();
+					elevator.addPassenger(passenger);
+					System.out.printf("Passenger %s boarded on floor %d going to %d%n", passenger.getName(), elevator.getCurrentFloor(), passenger.getDestinationFloor());
+				}
+				else {
+					System.out.printf("Passenger %s could not board due to the elevator being full. %s will have to wait for the next round.\n", passenger.getName(), passenger.getName());
+					break;
+				}
+				
+			}
+			
+			// If elevator is empty and no passengers are waiting, end elevator travel
+			/* Side note: we would just let the elevator be idle until called upon again.
+			 * This elevator is currently moving based on information stored in a text
+			 * file, so we can just end the program when there are no more individuals
+			 * looking to take the elevator. */
+			if(elevator.isElevatorEmpty() && allFloorsEmpty(floors)) {
+				System.out.println("All Passengers have made it to their final destinations. End Simulation");
+				break;
+			}
+			
+			// If the elevator has not reached the top, keep going
+			if(current < maxFloor) {
+				elevator.moveUp();
+			}
+			else {
+				System.out.println("Elevator has reached the top. Downward has not been implemented. End simulation.");
+				break;
+			}
+			
+		} // end while
+		
+	} // end main
+	
+	// This method checks to see if all floors are empty
+	public static boolean allFloorsEmpty(Floor[] floors) {
+		for(Floor f : floors) {
+			if (f.hasWaitingPassengers()) { // If floor has a passenger waiting, say floor not empty
+				return false;
+			}
+		}
+		return true;
+		
+	} // end allFloorsEmpty
+	
 
-
-	}
-
-}
+} // end ElevatorSimulation

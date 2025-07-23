@@ -1,0 +1,9 @@
+Jane 1 5
+Max 4 7
+Emerson 6 2
+Todd 8 1
+Gary 8 1
+Kylie 3 1
+Fred 7 2
+James 6 1
+June 5 4
