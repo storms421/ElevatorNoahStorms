@@ -1,18 +1,18 @@
 8 1 8 
-Jane 1 5
-Max 4 7
-Emerson 6 2
-Trey 8 1
-Broedy 3 6
-Kylie 3 1
-Fred 7 2
-James 6 1
-June 5 4
-Tony 1 6
-Brendan 2 7
-Noah 2 7
-Sophie 2 8
-Adam 3 7
-Michael 1 8
-Todd 1 6
-Brodie 4 1
+Jane 1 5 0
+Max 4 7 6
+Emerson 6 2 8
+Trey 8 1 12
+Broedy 3 6 12
+Kylie 3 1 20
+Fred 7 2 2
+James 6 1 7
+June 5 4 17
+Brendan 2 7 9
+Noah 2 7 7
+Sophie 2 8 18
+Adam 3 7 21
+Michael 1 8 32
+Todd 1 6 24
+Brodie 4 1 16
+Tony 1 6 23

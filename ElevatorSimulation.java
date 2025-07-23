@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Scanner;
 
 public class ElevatorSimulation {
@@ -32,45 +33,75 @@ public class ElevatorSimulation {
 		
 		System.out.println("\nLoading information...");
 		
+		ArrayList<Passenger> unarrivedPassengers = new ArrayList<>();
+		
 		// While reading through the file, pull passenger information
 		while(elevatorFile.hasNextLine()) {
 			
-			// Checking to see if there is more info for passenger. Buggy without
-			if(!elevatorFile.hasNext()) {
-				break;
-			}
-			String name = elevatorFile.next();
+			/* Had to redo this section due to it being
+			 * buggy. It ended up letting me know one of my
+			 * lines was messed up*/
+			String line = elevatorFile.nextLine().trim();
 			
-			if(!elevatorFile.hasNextInt()) {
-				break;
+			if(line.isEmpty()) {
+				continue;
 			}
-			int currentFloor = elevatorFile.nextInt();
 			
-			if(!elevatorFile.hasNextInt()) {
-				break;
+			// Check for any issues in text file
+			String[] parts = line.split("\\s+");
+			if(parts.length != 4) {
+				System.out.printf("Skipping malformed line %s\n", line);
+				continue;
 			}
-			int destinationFloor = elevatorFile.nextInt();
 			
-			Passenger passenger = new Passenger(currentFloor, destinationFloor, name); // Create Passenger objects
+			// Store passenger information
+			String name = parts[0];
+			int currentFloor = Integer.parseInt(parts[1]);
+			int destinationFloor = Integer.parseInt(parts[2]);
+			int arrivalTime = Integer.parseInt(parts[3]);
 			
-			// Adding passengers to their starting points in the building
-			int floorIndex = currentFloor - minFloor;
-			// If the passenger is on a legitimate floor, add them to that floor
-			if(floorIndex >= 0 && floorIndex < floors.length) {
-				floors[floorIndex].addPassenger(passenger);
-				System.out.printf("Passenger %s is waiting on floor %d to go to %d%n", passenger.getName(), passenger.getCurrentFloor(), passenger.getDestinationFloor());
-			}
-			else {
-				System.out.printf("Invalid starting floor %d for passenger %s\n", currentFloor, name);
-			}
-		}
+			Passenger passenger = new Passenger(currentFloor, destinationFloor, name, arrivalTime); // Create Passenger objects
+			//Verify information coming in
+			System.out.printf("Passenger %s is loading into the simulation. This passenger is on floor %d planning to go to floor %d. They will be arriving at time %d seconds.\n", 
+					passenger.getName(), passenger.getCurrentFloor(), passenger.getDestinationFloor(), passenger.getArrivalTime());
+			unarrivedPassengers.add(passenger);
+			
+		} // end while
 		
 		elevatorFile.close();
 		
 		System.out.println("\nStarting simulation...");
 		
-		// Loop simulation while there are passengers (currently will stop too if reaches the top)
+		int currentTime = 0; // Time Tracker
+		
+		// Loop simulation while there are passengers in simulation
 		while(true) {
+			
+			// Create an iterator to look through list of passengers that have not arrived to the elevator
+			Iterator<Passenger> iterate = unarrivedPassengers.iterator();
+			while(iterate.hasNext()) {
+				Passenger passenger = iterate.next();
+				// If passenger has arrived to elevator to push button, add them to the floor list
+				if(passenger.getArrivalTime() <= currentTime) {
+					int floorIndex = passenger.getCurrentFloor() - minFloor;
+					// Check if passenger floor is valid
+					if(floorIndex >= 0 && floorIndex < floors.length) {
+						floors[floorIndex].addPassenger(passenger);
+						// Lets us know the passenger has pushed the button to the elevator to ride
+						System.out.printf("Passenger %s arrived at floor %d at time %d to go to %d\n", passenger.getName(), passenger.getCurrentFloor(), 
+								passenger.getArrivalTime(), passenger.getDestinationFloor());
+					}
+					else {
+						System.out.printf("Invalid floor %d for passenger %s\n", passenger.getCurrentFloor(), passenger.getName());
+					}
+					iterate.remove();
+					
+				} // end outer-if
+				
+			} // end inner-while
+			
+			
+			
 			int current = elevator.getCurrentFloor();
 			Floor floor = floors[current - minFloor]; // Account for zero based indexing in array
 			
@@ -131,7 +162,7 @@ public class ElevatorSimulation {
 			 * This elevator is currently moving based on information stored in a text
 			 * file, so we can just end the program when there are no more individuals
 			 * looking to take the elevator. */
-			if(elevator.isElevatorEmpty() && allFloorsEmpty(floors)) {
+			if(elevator.isElevatorEmpty() && allFloorsEmpty(floors) && unarrivedPassengers.isEmpty()) {
 				System.out.println("All Passengers have made it to their final destinations. End Simulation");
 				break;
 			}
@@ -139,6 +170,8 @@ public class ElevatorSimulation {
 			// Takes care of whether the elevator moves up or down
 			elevator.move();
 			Thread.sleep(3000);
+			
+			currentTime += 9; // Accounts for elevator open, close, and move (3 + 3 + 3)
 			
 		} // end while
 		
