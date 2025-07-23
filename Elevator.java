@@ -14,7 +14,6 @@ public class Elevator {
 	private int currentFloor;
 	private String direction; // For 'up' and 'down'
 	private ArrayList<Passenger> passengers;
-	//private boolean doorsOpen;
 	//private int elevatorID; -> this will be for if I can implement a second elevator
 	
 	public Elevator(int capacity, int minFloor, int maxFloor) {
@@ -123,8 +122,7 @@ public class Elevator {
 	
 	// This method helps determine if the elevator has hit the max/min floor
 	/* Will note this is not the most optimal way an elevator should move.
-	 * This way might exhaust the elevator or take too much time.
-	 */
+	 * This way might exhaust the elevator or take too much time. */
 	public void updateDirection() {
 		
 		if(currentFloor == maxFloor) {

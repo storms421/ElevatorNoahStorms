@@ -5,8 +5,6 @@ public class Floor {
 	
 	private int floorNumber;
 	private Deque<Passenger> waitingPassengers;
-//	private boolean upButtonPressed;
-	//private boolean downButtonPressed;
 	 
 	public Floor(int floorNumber) {
 		
@@ -28,13 +26,6 @@ public class Floor {
 		waitingPassengers.addLast(p);
 		
 	} // end addPassenger
-	
-	
-	//public Deque<Passenger> getPassengerQueue(){
-		
-//		return waitingPassengers;
-		
-	//} // end getPassengerQueue
 	
 	public boolean hasWaitingPassengers() {
 		

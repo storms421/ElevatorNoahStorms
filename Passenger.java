@@ -3,7 +3,6 @@ public class Passenger {
 	private int currentFloor;
 	private int destinationFloor;
 	private String name;
-	//private boolean inElevator;
 	//private int waitTime;
 	
 	public Passenger(int currentFloor, int destinationFloor, String name) {
@@ -31,11 +30,5 @@ public class Passenger {
 		return name;
 		
 	} // end getName
-	
-	//public String toString() {
-		
-	//	return String.format("(%d -> %d)", currentFloor, destinationFloor);
-		
-	//} // end toString
 	
 } // end Passenger

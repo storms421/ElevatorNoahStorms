@@ -84,27 +84,46 @@ public class ElevatorSimulation {
 				System.out.printf("Passenger %s got off at floor %d\n", passenger.getName(), current);
 			}
 			
+			ArrayList<Passenger> waitingList = new ArrayList<>(); // Load passengers waiting
+			ArrayList<Passenger> blockedList = new ArrayList<>(); // Block waiting passengers if full
+			
 			// Elevator checks to see if floor has passengers waiting to board
 			while(floor.hasWaitingPassengers()) {
 				
-				// Check to see the next passenger's information
-				Passenger passenger = floor.peekNextPassenger();
+				waitingList.add(floor.getNextPassenger());
 				
-				
-				// If elevator is not full, let passengers on
+			}
+			
+			
+			for(Passenger passenger : waitingList) {
+				//If elevator is not full, let passenger(s) on
 				if(!elevator.isElevatorFull()) {
 					floor.getNextPassenger();
 					elevator.addPassenger(passenger);
 					System.out.printf("Passenger %s boarded on floor %d going to %d%n", passenger.getName(), elevator.getCurrentFloor(), passenger.getDestinationFloor());
 				}
-				else {
-					System.out.printf("Passenger %s could not board due to the elevator being full. %s will have to wait for the next round.\n", passenger.getName(), passenger.getName());
-					break;
+				else { // If elevator is full, add to list of those that cannot enter
+					blockedList.add(passenger);
+					floor.addPassenger(passenger);
 				}
-				
-			}
+			} // end for
 			
-			System.out.printf("Doors closing on floor %d...\n", current);
+			// Announce all the passengers that could not get on the floor
+			/* Side note: Originally, you could not see if multiple passengers had to wait,
+			 * so this extra array list being used allows for that
+			 */
+			if(!blockedList.isEmpty()) {
+				System.out.printf("Elevator is full. The following passenger(s) could not board on floor %d: ", current);
+				for(int i = 0; i < blockedList.size(); i++) {
+					System.out.print(blockedList.get(i).getName());
+					if(i < blockedList.size() - 1) {
+						System.out.print(", ");
+					}
+				}
+				System.out.println();
+			} // end if
+			
+			System.out.printf("\nDoors closing on floor %d...\n", current);
 			Thread.sleep(3000);
 			
 			// If elevator is empty and no passengers are waiting, end elevator travel
