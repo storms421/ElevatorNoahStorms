@@ -1,4 +1,4 @@
-public class Passenger {
+public class Passenger implements Comparable<Passenger> {
 	
 	private int currentFloor;
 	private int destinationFloor;
@@ -32,10 +32,19 @@ public class Passenger {
 		
 	} // end getName
 	
-public int getArrivalTime() {
+	public int getArrivalTime() {
 		
 		return arrivalTime;
 		
 	} // end getArrivalTime
+	
+	
+	// This method is for organizing my list of passengers by their arrival time
+	@Override
+	public int compareTo(Passenger other) {
+		
+		return Integer.compare(this.arrivalTime, other.arrivalTime);
+		
+	} // end compareTo
 	
 } // end Passenger
