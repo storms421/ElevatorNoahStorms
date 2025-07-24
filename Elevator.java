@@ -44,7 +44,18 @@ public class Elevator {
 		return passengers;
 		
 	} // end getPassengers
-
+	
+	public int getMinFloor() {
+		
+		return minFloor;
+		
+	} // end getMinFloor
+	
+	public int getMaxFloor() {
+		
+		return maxFloor;
+		
+	} // end getMaxFloor
 	
 	// This method checks if the elevator is empty
 	public boolean isElevatorEmpty() {
@@ -113,7 +124,7 @@ public class Elevator {
 	// This method moves elevator in current direction (up/down)
 	public void move() {
 		
-		System.out.printf("Current floor: %d, Direction: %s\n", currentFloor, direction);
+		//System.out.printf("Current floor: %d, Direction: %s\n", currentFloor, direction);
 		
 		if(isGoingUp()){
 			moveUp();
