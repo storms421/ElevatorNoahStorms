@@ -22,13 +22,10 @@ public class Elevator {
 		this.minFloor = minFloor;
 		this.maxFloor = maxFloor;
 		this.currentFloor = minFloor;
+		this.direction = "up";
 		passengers = new ArrayList<>();
 		
 	} // end constructor
-	
-	public void setDirection(String direction) {
-		this.direction = "up";
-	}
 	
 	public int getCurrentFloor() {
 		
@@ -41,15 +38,22 @@ public class Elevator {
 		return direction;
 		
 	} // end getDirection
+
+	public ArrayList<Passenger> getPassengers(){
+		
+		return passengers;
+		
+	} // end getPassengers
+
 	
-	// This method checks for if the elevator is empty
+	// This method checks if the elevator is empty
 	public boolean isElevatorEmpty() {
 		
 		return passengers.isEmpty();
 	
 	} // end isElevatorEmpty
 	
-	// This method checks for if the elevator is full
+	// This method checks if the elevator is full
 	public boolean isElevatorFull() {
 		
 		return passengers.size() >= capacity;
@@ -59,7 +63,6 @@ public class Elevator {
 	// This method adds a passenger if the elevator is not full
 	public boolean addPassenger(Passenger p) {
 		
-		// If not full, passenger may enter elevator
 		if(!isElevatorFull()) {
 			passengers.add(p);
 			return true;
@@ -69,7 +72,7 @@ public class Elevator {
 	
 	} // end addPassenger
 	
-	// This method checks if there are any passengers that request to get off at current floor
+	// This method removes passengers from elevator that is at their destination
 	public ArrayList<Passenger> unloadPassenger() {
 		
 		ArrayList<Passenger> leavingPassenger = new ArrayList<>(); // List of passengers unloading at current floor
@@ -87,7 +90,7 @@ public class Elevator {
 		
 	} // end unloadPassenger
 	
-	// This method checks if the elevator can go up
+	// This method moves elevator up a floor if not at top
 	public void moveUp() {
 		
 		if(currentFloor < maxFloor) {
@@ -97,7 +100,7 @@ public class Elevator {
 	
 	} // end moveUp
 	
-	// This method checks if the elevator can go down
+	// This method moves elevator down if not at bottom
 	public void moveDown() {
 		
 		if(currentFloor > minFloor) {
@@ -107,12 +110,12 @@ public class Elevator {
 	
 	} // end moveDown
 	
-	// This method checks to see what direction the elevator will go
+	// This method moves elevator in current direction (up/down)
 	public void move() {
 		
-		updateDirection();
+		System.out.printf("Current floor: %d, Direction: %s\n", currentFloor, direction);
 		
-		if(direction.equals("up")){
+		if(isGoingUp()){
 			moveUp();
 		} else {
 			moveDown();
@@ -120,17 +123,22 @@ public class Elevator {
 		
 	} // end move
 	
-	// This method helps determine if the elevator has hit the max/min floor
-	/* Will note this is not the most optimal way an elevator should move.
-	 * This way might exhaust the elevator or take too much time. */
-	public void updateDirection() {
+	// This method checks if the elevator is going up
+	public boolean isGoingUp() {
 		
-		if(currentFloor == maxFloor) {
+		return direction.equals("up");
+		
+	} // end isGoingUp
+	
+	// This method reverses elevator's direction up to down (vice versa)
+	public void reverseDirection() {
+		
+		if(direction.equals("up")) {
 			direction = "down";
-		} else if (currentFloor == minFloor) {
+		} else {
 			direction = "up";
 		}
 		
-	} // end updateDirection
+	} // end reverseDirection
 	
 } // end Elevator

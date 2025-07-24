@@ -9,8 +9,6 @@ public class Floor {
 	public Floor(int floorNumber) {
 		
 		this.floorNumber = floorNumber;
-		//this.upButtonPressed = upButtonPressed;
-		//this.downButtonPressed = downButtonPressed;
 		waitingPassengers = new LinkedList<>();
 		
 	} // end constructor

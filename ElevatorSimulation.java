@@ -77,7 +77,8 @@ public class ElevatorSimulation {
 		// Loop simulation while there are passengers in simulation
 		while(true) {
 			
-			// Create an iterator to look through list of passengers that have not arrived to the elevator
+			
+			// Create an iterator to look through list of passengers that have not arrived to the elevator yet
 			Iterator<Passenger> iterate = unarrivedPassengers.iterator();
 			while(iterate.hasNext()) {
 				Passenger passenger = iterate.next();
@@ -101,13 +102,12 @@ public class ElevatorSimulation {
 			} // end inner-while
 			
 			
-			
 			int current = elevator.getCurrentFloor();
 			Floor floor = floors[current - minFloor]; // Account for zero based indexing in array
 			
 			// Adding a timer to simulate time for doors open/close and moving to next floor
 			System.out.printf("Doors opening on floor %d...\n", current);
-			Thread.sleep(3000); // 3 seconds
+			Thread.sleep(1000); // 3 seconds
 			
 			//First, unload passengers at the floor if any. This is how we make room for new passengers
 			ArrayList<Passenger> exiting = elevator.unloadPassenger();
@@ -116,38 +116,33 @@ public class ElevatorSimulation {
 			}
 			
 			ArrayList<Passenger> waitingList = new ArrayList<>(); // Load passengers waiting
-			ArrayList<Passenger> blockedList = new ArrayList<>(); // Block waiting passengers if full
 			
-			// Elevator checks to see if floor has passengers waiting to board
+			// If elevator has space, let passengers in elevator. Otherwise, add to waiting list
 			while(floor.hasWaitingPassengers()) {
-				
-				waitingList.add(floor.getNextPassenger());
-				
+			    Passenger passenger = floor.getNextPassenger();
+			    if (!elevator.isElevatorFull()) {
+			        elevator.addPassenger(passenger);
+			        System.out.printf("Passenger %s boarded on floor %d going to %d%n", passenger.getName(), elevator.getCurrentFloor(), passenger.getDestinationFloor());
+			    } else {
+			        waitingList.add(passenger);
+			    }
 			}
-			
-			
-			for(Passenger passenger : waitingList) {
-				//If elevator is not full, let passenger(s) on
-				if(!elevator.isElevatorFull()) {
-					floor.getNextPassenger();
-					elevator.addPassenger(passenger);
-					System.out.printf("Passenger %s boarded on floor %d going to %d%n", passenger.getName(), elevator.getCurrentFloor(), passenger.getDestinationFloor());
-				}
-				else { // If elevator is full, add to list of those that cannot enter
-					blockedList.add(passenger);
-					floor.addPassenger(passenger);
-				}
-			} // end for
+
+			// Re-add waiting passengers back to floor queue
+			for (Passenger waiting : waitingList) {
+			    floor.addPassenger(waiting);
+			}
+
 			
 			// Announce all the passengers that could not get on the floor
 			/* Side note: Originally, you could not see if multiple passengers had to wait,
 			 * so this extra array list being used allows for that
 			 */
-			if(!blockedList.isEmpty()) {
+			if(!waitingList.isEmpty()) {
 				System.out.printf("Elevator is full. The following passenger(s) could not board on floor %d: ", current);
-				for(int i = 0; i < blockedList.size(); i++) {
-					System.out.print(blockedList.get(i).getName());
-					if(i < blockedList.size() - 1) {
+				for(int i = 0; i < waitingList.size(); i++) {
+					System.out.print(waitingList.get(i).getName());
+					if(i < waitingList.size() - 1) {
 						System.out.print(", ");
 					}
 				}
@@ -155,7 +150,7 @@ public class ElevatorSimulation {
 			} // end if
 			
 			System.out.printf("\nDoors closing on floor %d...\n", current);
-			Thread.sleep(3000);
+			Thread.sleep(1000);
 			
 			// If elevator is empty and no passengers are waiting, end elevator travel
 			/* Side note: we would just let the elevator be idle until called upon again.
@@ -167,11 +162,18 @@ public class ElevatorSimulation {
 				break;
 			}
 			
+			// Check if requests in current direction. If not, reverse direction pending requests in opposite direction
+			boolean goingUp = elevator.isGoingUp();
+			if(!hasRequestsInDirection(elevator, floors, goingUp, minFloor, maxFloor)) {
+				elevator.reverseDirection();
+				System.out.printf("No current requests %s. Elevator will start going %s.\n", goingUp ? "above" : "below", elevator.isGoingUp() ? "up" : "down");
+			}
+			
 			// Takes care of whether the elevator moves up or down
 			elevator.move();
-			Thread.sleep(3000);
+			Thread.sleep(1000);
 			
-			currentTime += 9; // Accounts for elevator open, close, and move (3 + 3 + 3)
+			currentTime += 3; // Accounts for elevator open, close, and move (1 + 1 + 1)
 			
 		} // end while
 		
@@ -187,6 +189,37 @@ public class ElevatorSimulation {
 		return true;
 		
 	} // end allFloorsEmpty
+	
+	// This method checks for any active elevator requests from those waiting on floors or currently in the elevator
+	public static boolean hasRequestsInDirection(Elevator elevator, Floor[] floors, boolean goingUp, int minFloor, int maxFloor) {
+	
+		int currentFloor = elevator.getCurrentFloor();
+		
+		// Checks if any on-board passengers want to get off in direction of travel
+		for(Passenger passenger : elevator.getPassengers()) {
+			if(goingUp && passenger.getDestinationFloor() > currentFloor) {
+				return true;
+			}
+			if(!goingUp && passenger.getDestinationFloor() < currentFloor) {
+				return true;
+			}
+			
+		} // end for
+		
+		// Checks if any floors in the given direction have passengers waiting to be picked up
+		for(int i = 0; i < floors.length; i++) {
+			int floorNum = minFloor + i;
+			if(goingUp && floorNum > currentFloor && floors[i].hasWaitingPassengers()) {
+				return true;
+			}
+			if(!goingUp && floorNum < currentFloor && floors[i].hasWaitingPassengers()) {
+				return true;
+			}
+		} // end for
+		
+		return false; // No requests, allow for reverse
+		
+	} // end hasRequestsInDirection
 	
 
 } // end ElevatorSimulation
