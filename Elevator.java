@@ -5,8 +5,7 @@ public class Elevator {
 	
 	/* Making these set variables since they should not need to change.
 	 * Possible they could make the elevator bigger or have floors marked
-	 * off for travel. Maybe in another implementation.
-	 */
+	 * off for travel. Maybe in another implementation. */
 	private final int capacity;
 	private final int minFloor;
 	private final int maxFloor; 
@@ -124,7 +123,7 @@ public class Elevator {
 	// This method moves elevator in current direction (up/down)
 	public void move() {
 		
-		//System.out.printf("Current floor: %d, Direction: %s\n", currentFloor, direction);
+		//System.out.printf("Current floor: %d, Direction: %s\n", currentFloor, direction);  // Debug
 		
 		if(isGoingUp()){
 			moveUp();

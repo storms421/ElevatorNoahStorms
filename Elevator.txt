@@ -1,9 +1,9 @@
-8 1 8 
+8 1 8
 Jane 1 5 0
 Max 4 7 6
 Emerson 6 2 8
 Trey 8 1 12
-Broedy 3 6 85
+Broedy 3 6 72
 Kylie 3 1 20
 Fred 7 2 2
 James 6 1 7

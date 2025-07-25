@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
 
@@ -42,5 +43,11 @@ public class Floor {
 		return waitingPassengers.pollFirst();
 		
 	} // end getNextPassenger
+	
+	public ArrayList<Passenger> peekAllPassengers(){
+		
+		return new ArrayList<>(waitingPassengers);
+		
+	} // end peekAllPassengers
 
 } // end Floor

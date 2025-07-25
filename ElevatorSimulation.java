@@ -6,11 +6,18 @@ import java.util.Iterator;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
-public class ElevatorSimulation {
+ 
+ public class ElevatorSimulation {
 	   public static void main(String[] args) throws IOException, InterruptedException {
 
-	       Scanner elevatorFile = new Scanner(new File("Elevator.txt"));
+		   //Check if a file path was passed as an argument
+		   if (args.length == 0) {
+		        System.out.println("Usage: java ElevatorSimulation <input_file>");
+		        return;
+		   }
+
+		   String filename = args[0];
+		   Scanner elevatorFile = new Scanner(new File(filename));
 
 	       System.out.println("Starting up system...\n");
 
@@ -36,7 +43,7 @@ public class ElevatorSimulation {
 	       AtomicBoolean wasIdle = new AtomicBoolean(false);
 
 	       // This is to help track the elevator's actions
-	       int actionStage = 0; // 0 = idle, 1 = door opening, 2 = load/unload, 3 = move
+	       int actionStage = 0; // 0 = idle, 1 = door opening, 2 = load/unload, 3 = door closing, 4 = move
 	       
 	       // Create action object for elevator
 	       ElevatorActionState action = new ElevatorActionState();
@@ -99,7 +106,7 @@ public class ElevatorSimulation {
 
 	           /* Had to re-do this section due to it being
 	            * buggy. It ended up letting me know one of my
-	            * lines was messed up*/
+	            * lines was messed up. Less lines though!*/
 	           String line = elevatorFile.nextLine().trim();
 
 	           if (line.isEmpty()) {
@@ -208,8 +215,7 @@ public class ElevatorSimulation {
 
 	       // Announce all the passengers that could not get on the floor
 	       /* Side note: Originally, you could not see if multiple passengers had to wait,
-	        * so this extra array list being used allows for that
-	        */
+	        * so this extra array list being used allows for that. */
 	       if (!waitingList.isEmpty()) {
 	           System.out.printf("Elevator is full. The following passenger(s) could not board on floor %d: ", current);
 	           for (int i = 0; i < waitingList.size(); i++) {
@@ -227,9 +233,21 @@ public class ElevatorSimulation {
 	   private static void checkAndMoveElevator(Elevator elevator, Floor[] floors, int minFloor, int maxFloor, AtomicBoolean wasIdle) {
 
 	       boolean goingUp = elevator.isGoingUp();
+
+	       // First check: if no requests in current direction, reverse
 	       if (!hasRequestsInDirection(elevator, floors, goingUp, minFloor, maxFloor)) {
 	           elevator.reverseDirection();
-	           //    System.out.printf("No current requests %s. Elevator will start going %s.\n", goingUp ? "above" : "below", elevator.isGoingUp() ? "up" : "down");
+
+	           // Re-check after reversing
+	           goingUp = elevator.isGoingUp();
+	           if (!hasRequestsInDirection(elevator, floors, goingUp, minFloor, maxFloor)) {
+	               // No requests in either direction, then elevator is idle
+	               if (!wasIdle.get()) { // This stops the below message from repeating itself while idling
+	                   System.out.println("Elevator is idle. No requests from passengers."); // Bug here. It will print when the floor reaches top or bottom
+	                   wasIdle.set(true);
+	               }
+	               return; // Prevent movement if no valid direction
+	           }
 	       }
 
 	       // Takes care of whether the elevator moves up or down
@@ -289,27 +307,38 @@ public class ElevatorSimulation {
 	   
 	   // This method performs the elevator actions door open/close, unload/load, and move
 	   public static void performElevatorAction(ElevatorActionState action, Elevator elevator, Floor[] floors, AtomicBoolean wasIdle) {
-		   
+
 	       // If elevator is not doing anything yet, check if it needs to stop or move
-		   if (action.stage == 0) {
+	       if (action.stage == 0) {
 	           // This only acts if there are people on-board or people waiting on any floor
 	           if (!elevator.isElevatorEmpty() || !allFloorsEmpty(floors)) {
 	               Floor floor = floors[elevator.getCurrentFloor() - elevator.getMinFloor()];
 
 	               // This checks if anyone needs to get off or on at this floor
 	               boolean hasExiting = false;
-	               for(Passenger passenger : elevator.getPassengers()) {
-	            	   if(passenger.getDestinationFloor() == elevator.getCurrentFloor()) {
-	            		   hasExiting = true;
-	            		   break;
-	            	   }
-	            	   
-	               } // end for
-	               
-	               boolean hasBoarding = floor.hasWaitingPassengers();
+	               for (Passenger passenger : elevator.getPassengers()) {
+	                   if (passenger.getDestinationFloor() == elevator.getCurrentFloor()) {
+	                       hasExiting = true;
+	                       break;
+	                   }
+	               }
 
-	               if (hasExiting || hasBoarding) {
-	                   // Opens doors if anyone needs to exit or board
+	               // Check direction of boarding passengers
+	               boolean hasBoardingSameDirection = false;
+	               boolean hasBoardingOppositeDirection = false;
+	               
+	               // Passengers who want to board elevator need to be checked if same or opposite direction of elevator
+	               for (Passenger passenger : floor.peekAllPassengers()) {
+	                   boolean wantsToGoUp = passenger.getDestinationFloor() > passenger.getCurrentFloor();
+	                   if (wantsToGoUp == elevator.isGoingUp()) {
+	                       hasBoardingSameDirection = true;
+	                       break;
+	                   } else {
+	                       hasBoardingOppositeDirection = true;
+	                   }
+	               }
+
+	               if (hasExiting || hasBoardingSameDirection || (hasExiting && hasBoardingOppositeDirection)) {
 	                   System.out.printf("\nDoors opening on floor %d...\n", elevator.getCurrentFloor());
 	                   action.stage = 1; // This starts door open stage
 	                   action.timer = 1; // 1 second
@@ -325,13 +354,11 @@ public class ElevatorSimulation {
 	                   wasIdle.set(true);
 	               }
 	           }
-	           
-	       } // end outer-if
+
+	       } // end stage 0
 
 	       // Stage 1: doors open
 	       else if (action.stage == 1) {
-	    	   /* This timer helps slow down the elevator so everything is not done instantly.
-	    	    * This allows every stage to last one second. */
 	           if (--action.timer <= 0) {
 	               action.stage = 2; // To next stage
 	               action.timer = 1; // Resets timer for stage
@@ -348,13 +375,13 @@ public class ElevatorSimulation {
 	               action.timer = 1;
 	           }
 	       }
-		   
-		   // Stage 3: door closing
+
+	       // Stage 3: door closing
 	       else if (action.stage == 3) {
-	    	   if(--action.timer <= 0) {
-	    		   action.stage = 4; // To next stage
-	    		   action.timer = 1;
-	    	   }
+	           if (--action.timer <= 0) {
+	               action.stage = 4; // To next stage
+	               action.timer = 1;
+	           }
 	       }
 
 	       // Stage 4: elevator moving
@@ -364,7 +391,16 @@ public class ElevatorSimulation {
 	               action.stage = 0; // Done with actions
 	           }
 	       }
-		   
+
 	   } // end performElevatorAction
 
+
 } // end ElevatorSimulation
+ 
+ 
+ // If I were to add another elevator, I would want to make an ElevatorManagement class to handle two or more elevators add a time and have them communicate
+ /* I would want to be able to see these two elevators moving at the same time, so have it where I open up two terminals that connect to one another and run
+    simultaneously */
+ // I would want to have edge cases for my elevators just in case both elevators are at the opposite ends of the building, needing to get to the middle
+ // Have the elevator that may be idle, help the other elevator that may become busy
+ // Making sure both of my elevators do not stop on the same floor
