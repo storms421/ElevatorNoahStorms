@@ -17,7 +17,7 @@ This project simulates the operation of an elevator system, where multiple passe
 To download the project to your local machine, clone the repository from GitHub:
 
 ```
-git clone https://github.com/your-username/elevator-simulation.git
+git clone https://github.com/storms421/ElevatorNoahStorms.git
 cd elevator-simulation
 ```
 ### 2. Compile the Code
@@ -47,13 +47,13 @@ java ElevatorSimulation Elevator.txt
 # Test File Information
 
 Elevator.txt
-This is a main test file with random data to simulate a long duration of the elevator.
+- This is a main test file with random data to simulate a long duration of the elevator.
 
 Elevator2.txt
-This tests the program where all the passengers press at the same time, but those going in one direction are taken care of first, then the rest are picked up the other way.
+- This tests the program where all the passengers press at the same time, but those going in one direction are taken care of first, then the rest are picked up the other way.
 
 Elevator3.txt
-This tests the program for the elevator to be idle and show a wait time before the button is pressed to get the elevator moving again.
+- This tests the program for the elevator to be idle and show a wait time before the button is pressed to get the elevator moving again.
 
 Elevator4.txt
-This tests the program for when the elevator is full and someone has to stay behind.
+- This tests the program for when the elevator is full and someone has to stay behind.
