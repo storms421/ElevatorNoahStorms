@@ -1,0 +1,10 @@
+8 1 8
+Max 1 7 0
+Emerson 1 4 0
+Trey 1 4 0
+Broedy 1 6 0
+Kylie 1 7 0
+Fred 1 3 0
+James 1 8 0
+June 1 4 0
+Brendan 1 7 0
